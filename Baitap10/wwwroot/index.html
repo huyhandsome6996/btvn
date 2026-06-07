@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quan ly nhan vien - Baitap10</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        h2 {
+            color: #555;
+        }
+        .form-group {
+            margin-bottom: 10px;
+        }
+        label {
+            display: inline-block;
+            width: 100px;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="date"], select {
+            padding: 5px;
+            width: 250px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+        .radio-group {
+            display: inline-block;
+        }
+        .radio-group label {
+            width: auto;
+            font-weight: normal;
+            margin-right: 15px;
+        }
+        .btn-group {
+            margin-top: 15px;
+        }
+        button {
+            padding: 8px 20px;
+            margin-right: 10px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn-them {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .btn-luu {
+            background-color: #2196F3;
+            color: white;
+        }
+        .btn-xoa {
+            background-color: #f44336;
+            color: white;
+        }
+        button:hover {
+            opacity: 0.8;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: white;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        /* Dong duoc chon se co mau xanh */
+        tr.selected {
+            background-color: #b3d9ff !important;
+        }
+        /* Chi select ca dong, khong select o don le */
+        td {
+            user-select: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>QUAN LY NHAN VIEN</h1>
+
+    <h2>Thong tin nhan vien</h2>
+
+    <div class="form-group">
+        <label>Ma NV:</label>
+        <input type="text" id="txtMaNV" placeholder="Nhap ma nhan vien">
+    </div>
+    <div class="form-group">
+        <label>Ho ten:</label>
+        <input type="text" id="txtHoTen" placeholder="Nhap ho ten">
+    </div>
+    <div class="form-group">
+        <label>Ngay sinh:</label>
+        <input type="date" id="txtNgaySinh">
+    </div>
+    <div class="form-group">
+        <label>Gioi tinh:</label>
+        <div class="radio-group">
+            <input type="radio" name="gioiTinh" id="rdNam" value="Nam" checked>
+            <label for="rdNam">Nam</label>
+            <input type="radio" name="gioiTinh" id="rdNu" value="Nu">
+            <label for="rdNu">Nu</label>
+        </div>
+    </div>
+    <div class="form-group">
+        <label>Thanh pho:</label>
+        <select id="txtThanhPho">
+            <option value="Ha Noi">Ha Noi</option>
+            <option value="Hue">Hue</option>
+            <option value="Tp. HCM">Tp. HCM</option>
+            <option value="Da Nang">Da Nang</option>
+            <option value="Hai Phong">Hai Phong</option>
+        </select>
+    </div>
+
+    <div class="btn-group">
+        <button class="btn-them" onclick="themNhanVien()">Them</button>
+        <button class="btn-luu" onclick="luuChinhSua()">Luu chinh sua</button>
+        <button class="btn-xoa" onclick="xoaNhanVien()">Xoa</button>
+    </div>
+
+    <h2>Danh sach nhan vien</h2>
+    <table id="tblNhanVien">
+        <thead>
+            <tr>
+                <th>Ma NV</th>
+                <th>Ho ten</th>
+                <th>Ngay sinh</th>
+                <th>Gioi tinh</th>
+                <th>Thanh pho</th>
+            </tr>
+        </thead>
+        <tbody id="tbodyNhanVien">
+        </tbody>
+    </table>
+
+    <script>
+        // Bien luu dong dang chon
+        var selectedRow = null;
+
+        // Lay du lieu tu form
+        function layDuLieuForm() {
+            var gioiTinh = document.querySelector('input[name="gioiTinh"]:checked').value;
+            return {
+                maNV: document.getElementById("txtMaNV").value.trim(),
+                hoTen: document.getElementById("txtHoTen").value.trim(),
+                ngaySinh: document.getElementById("txtNgaySinh").value,
+                gioiTinh: gioiTinh,
+                thanhPho: document.getElementById("txtThanhPho").value
+            };
+        }
+
+        // Xoa trang form
+        function xoaForm() {
+            document.getElementById("txtMaNV").value = "";
+            document.getElementById("txtHoTen").value = "";
+            document.getElementById("txtNgaySinh").value = "";
+            document.getElementById("rdNam").checked = true;
+            document.getElementById("txtThanhPho").value = "Ha Noi";
+            document.getElementById("txtMaNV").disabled = false;
+            // Bo chon dong
+            if (selectedRow != null) {
+                selectedRow.classList.remove("selected");
+                selectedRow = null;
+            }
+        }
+
+        // Dinh dang ngay thang
+        function dinhDangNgay(ngaySinh) {
+            if (!ngaySinh) return "";
+            var d = new Date(ngaySinh);
+            var day = d.getDate().toString().padStart(2, '0');
+            var month = (d.getMonth() + 1).toString().padStart(2, '0');
+            var year = d.getFullYear();
+            return day + "/" + month + "/" + year;
+        }
+
+        // Hien thi danh sach nhan vien
+        function hienThiDanhSach(list) {
+            var tbody = document.getElementById("tbodyNhanVien");
+            tbody.innerHTML = "";
+            for (var i = 0; i < list.length; i++) {
+                var nv = list[i];
+                var tr = document.createElement("tr");
+                tr.innerHTML = "<td>" + nv.maNV + "</td>" +
+                    "<td>" + nv.hoTen + "</td>" +
+                    "<td>" + dinhDangNgay(nv.ngaySinh) + "</td>" +
+                    "<td>" + nv.gioiTinh + "</td>" +
+                    "<td>" + nv.thanhPho + "</td>";
+                // Gan su kien click cho tung dong
+                tr.onclick = (function(nhanVien, row) {
+                    return function() {
+                        chonNhanVien(nhanVien, row);
+                    };
+                })(nv, tr);
+                tbody.appendChild(tr);
+            }
+        }
+
+        // Chon nhan vien tu bang - click vao dong se dien vao form
+        function chonNhanVien(nv, row) {
+            // Bo chon dong cu
+            if (selectedRow != null) {
+                selectedRow.classList.remove("selected");
+            }
+            // Chon dong moi
+            row.classList.add("selected");
+            selectedRow = row;
+
+            // Dien du lieu vao form
+            document.getElementById("txtMaNV").value = nv.maNV;
+            document.getElementById("txtHoTen").value = nv.hoTen;
+            // Chuyen ngay sinh ve dinh dang yyyy-mm-dd cho input date
+            if (nv.ngaySinh) {
+                var d = new Date(nv.ngaySinh);
+                var day = d.getDate().toString().padStart(2, '0');
+                var month = (d.getMonth() + 1).toString().padStart(2, '0');
+                var year = d.getFullYear();
+                document.getElementById("txtNgaySinh").value = year + "-" + month + "-" + day;
+            }
+            // Chon radio button gioi tinh
+            if (nv.gioiTinh === "Nam") {
+                document.getElementById("rdNam").checked = true;
+            } else {
+                document.getElementById("rdNu").checked = true;
+            }
+            // Chon thanh pho
+            document.getElementById("txtThanhPho").value = nv.thanhPho;
+            // Khoa ma NV khi dang sua
+            document.getElementById("txtMaNV").disabled = true;
+        }
+
+        // Them nhan vien
+        function themNhanVien() {
+            var nv = layDuLieuForm();
+            if (nv.maNV === "" || nv.hoTen === "") {
+                alert("Vui long nhap day du ma nhan vien va ho ten!");
+                return;
+            }
+            fetch("/api/nhanvien", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(nv)
+            })
+            .then(function(res) {
+                if (res.ok) {
+                    alert("Them nhan vien thanh cong!");
+                    xoaForm();
+                    taiDanhSach();
+                } else {
+                    return res.text();
+                }
+            })
+            .then(function(msg) {
+                if (msg) alert(msg);
+            })
+            .catch(function(err) {
+                alert("Loi: " + err);
+            });
+        }
+
+        // Luu chinh sua
+        function luuChinhSua() {
+            if (selectedRow == null) {
+                alert("Vui long chon nhan vien can sua trong bang!");
+                return;
+            }
+            var nv = layDuLieuForm();
+            var id = nv.maNV;
+            fetch("/api/nhanvien/" + id, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(nv)
+            })
+            .then(function(res) {
+                if (res.ok) {
+                    alert("Sua nhan vien thanh cong!");
+                    xoaForm();
+                    taiDanhSach();
+                } else {
+                    return res.text();
+                }
+            })
+            .then(function(msg) {
+                if (msg) alert(msg);
+            })
+            .catch(function(err) {
+                alert("Loi: " + err);
+            });
+        }
+
+        // Xoa nhan vien
+        function xoaNhanVien() {
+            if (selectedRow == null) {
+                alert("Vui long chon nhan vien can xoa trong bang!");
+                return;
+            }
+            var nv = layDuLieuForm();
+            if (!confirm("Ban co chac chan xoa nhan vien " + nv.maNV + "?")) {
+                return;
+            }
+            fetch("/api/nhanvien/" + nv.maNV, {
+                method: "DELETE"
+            })
+            .then(function(res) {
+                if (res.ok) {
+                    alert("Xoa nhan vien thanh cong!");
+                    xoaForm();
+                    taiDanhSach();
+                } else {
+                    return res.text();
+                }
+            })
+            .then(function(msg) {
+                if (msg) alert(msg);
+            })
+            .catch(function(err) {
+                alert("Loi: " + err);
+            });
+        }
+
+        // Tai danh sach nhan vien tu API
+        function taiDanhSach() {
+            fetch("/api/nhanvien")
+            .then(function(res) {
+                return res.json();
+            })
+            .then(function(data) {
+                hienThiDanhSach(data);
+            })
+            .catch(function(err) {
+                alert("Loi tai danh sach: " + err);
+            });
+        }
+
+        // Tai danh sach khi mo trang
+        taiDanhSach();
+    </script>
+</body>
+</html>

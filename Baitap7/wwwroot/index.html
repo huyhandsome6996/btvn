@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý nhân sự</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 10px;
+        }
+
+        label {
+            display: inline-block;
+            width: 100px;
+            font-weight: bold;
+        }
+
+        input[type="text"], input[type="date"], select {
+            padding: 5px;
+            width: 200px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+
+        .radio-group {
+            display: inline-block;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: white;
+        }
+
+        table, th, td {
+            border: 1px solid #ccc;
+        }
+
+        th {
+            background-color: #4CAF50;
+            color: white;
+            padding: 8px;
+            text-align: center;
+        }
+
+        td {
+            padding: 8px;
+            text-align: center;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Quản lý nhân sự</h1>
+
+        <!-- Form nhập liệu -->
+        <div class="form-group">
+            <label>Mã NV:</label>
+            <input type="text" id="maNV" />
+        </div>
+
+        <div class="form-group">
+            <label>Họ tên:</label>
+            <input type="text" id="hoTen" />
+        </div>
+
+        <div class="form-group">
+            <label>Ngày sinh:</label>
+            <input type="date" id="ngaySinh" />
+        </div>
+
+        <div class="form-group">
+            <label>Giới tính:</label>
+            <div class="radio-group">
+                <input type="radio" name="gioiTinh" value="Nam" checked /> Nam
+                <input type="radio" name="gioiTinh" value="Nu" /> Nữ
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Thành phố:</label>
+            <select id="thanhPho">
+                <option value="">-- Chọn thành phố --</option>
+            </select>
+        </div>
+
+        <!-- Bảng dữ liệu -->
+        <table id="bangNhanVien">
+            <thead>
+                <tr>
+                    <th>Mã NV</th>
+                    <th>Họ tên</th>
+                    <th>Ngày sinh</th>
+                    <th>Giới tính</th>
+                    <th>Thành phố</th>
+                </tr>
+            </thead>
+            <tbody id="duLieu">
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // Load danh sách thành phố vào combobox
+        function loadThanhPho() {
+            fetch('/api/nhanvien/thanhpho')
+                .then(function (response) {
+                    return response.json();
+                })
+                .then(function (data) {
+                    var select = document.getElementById('thanhPho');
+                    for (var i = 0; i < data.length; i++) {
+                        var option = document.createElement('option');
+                        option.value = data[i];
+                        option.text = data[i];
+                        select.appendChild(option);
+                    }
+                });
+        }
+
+        // Load dữ liệu nhân viên vào bảng
+        function loadBang() {
+            fetch('/api/nhanvien')
+                .then(function (response) {
+                    return response.json();
+                })
+                .then(function (data) {
+                    var tbody = document.getElementById('duLieu');
+                    tbody.innerHTML = '';
+                    for (var i = 0; i < data.length; i++) {
+                        var nv = data[i];
+                        var row = '<tr>';
+                        row += '<td>' + nv.maNV + '</td>';
+                        row += '<td>' + nv.hoTen + '</td>';
+                        row += '<td>' + formatDate(nv.ngaySinh) + '</td>';
+                        row += '<td>' + nv.gioiTinh + '</td>';
+                        row += '<td>' + nv.thanhPho + '</td>';
+                        row += '</tr>';
+                        tbody.innerHTML += row;
+                    }
+                });
+        }
+
+        // Hàm formatDate để đổi ngày sang dd/mm/yyyy
+        function formatDate(dateStr) {
+            var d = new Date(dateStr);
+            var day = d.getDate();
+            var month = d.getMonth() + 1;
+            var year = d.getFullYear();
+            return day + '/' + month + '/' + year;
+        }
+
+        // Gọi hàm khi trang được tải
+        loadThanhPho();
+        loadBang();
+    </script>
+</body>
+</html>

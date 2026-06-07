@@ -1,0 +1,6 @@
+@Baitap9_HostAddress = http://localhost:5082
+
+GET {{Baitap9_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
