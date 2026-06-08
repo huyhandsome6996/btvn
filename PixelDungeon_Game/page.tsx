@@ -414,19 +414,16 @@ export default function PixelDungeonGame() {
     // Wall
     if (tile === T.WALL) return
 
-    // Door
+    // Door - đi vào là mở
     if (tile === T.DOOR) {
-      if (p.keys > 0) {
-        p.keys--
-        mapRef.current[ny][nx] = T.FLOOR
-        addLog('🔓 Mở cửa thành công!', C.textYellow)
-        setPlayerStats({ ...p.stats })
-        updatePlayerKeys(p.keys)
-        return
-      } else {
-        addLog('🔒 Cần chìa khóa để mở cửa!', C.textGray)
-        return
-      }
+      mapRef.current[ny][nx] = T.FLOOR
+      addLog('🚪 Mở cửa!', C.textYellow)
+      // Di chuyển vào vị trí cửa vừa mở
+      p.pos.x = nx
+      p.pos.y = ny
+      p.moveCD = 6
+      p.animFrame = (p.animFrame + 1) % 4
+      addParticles(nx * TILE + TILE / 2, ny * TILE + TILE / 2, C.textYellow, 5)
     }
 
     // Enemy at position - attack
